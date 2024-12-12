@@ -12,8 +12,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     build-essential \
     ca-certificates \
+    gnupg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+
+# Configurer Git avec une identité par défaut
+RUN git config --global user.name "Docker User" \
+    && git config --global user.email "docker@example.com"
+
 
 # Installer Python
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -22,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
 
 # Installer Go
 ENV GO_VERSION=1.21.0
@@ -32,8 +40,32 @@ RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
 # Ajouter Go au PATH
 ENV PATH="/usr/local/go/bin:${PATH}"
 
+
+# Installer Rust via rustup
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y \
+    && . $HOME/.cargo/env \
+    && rustup update
+
+# Ajouter Rust au PATH
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+
+# Installer solc (via solc-select)
+RUN pip3 install solc-select \
+    && solc-select install all \
+    && solc-select use 0.8.0
+
+
+# Installer Foundry
+RUN curl -L https://foundry.paradigm.xyz | bash \
+    && /root/.foundry/bin/foundryup
+
+# Ajouter Foundry au PATH
+ENV PATH="/root/.foundry/bin:${PATH}"
+
+
 # Vérifier les installations
-RUN go version && python3 --version && pip3 --version
+RUN go version && python3 --version && pip3 --version && rustc --version && solc --version && forge --version && cast --version && anvil --version
 
 # Définir le répertoire de travail
 WORKDIR /app
