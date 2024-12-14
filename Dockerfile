@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 
 # Installer Go
-ENV GO_VERSION=1.21.0
+ENV GO_VERSION=1.22.0
 RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
     && tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz \
     && rm go${GO_VERSION}.linux-amd64.tar.gz
@@ -63,9 +63,29 @@ RUN curl -L https://foundry.paradigm.xyz | bash \
 # Ajouter Foundry au PATH
 ENV PATH="/root/.foundry/bin:${PATH}"
 
+# Installer Crytic-compile et ses dépendances
+RUN pip3 install crytic-compile
+
+# Installer Medusa
+RUN git clone https://github.com/crytic/medusa \
+    && cd medusa \
+    && go build -trimpath -o medusa \
+    && mv medusa /usr/local/bin/ \
+    && cd .. \
+    && rm -rf medusa
 
 # Vérifier les installations
-RUN go version && python3 --version && pip3 --version && rustc --version && solc --version && forge --version && cast --version && anvil --version
+RUN go version \
+    && python3 --version \
+    && pip3 --version \
+    && rustc --version \
+    && solc --version \
+    && forge --version \
+    && cast --version \
+    && anvil --version \
+    && medusa --version \
+    && crytic-compile --version
+
 
 # Définir le répertoire de travail
 WORKDIR /app
