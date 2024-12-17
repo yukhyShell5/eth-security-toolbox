@@ -7,6 +7,7 @@ LABEL description="Image Debian Bullseye avec Go et Python"
 
 # Installer les dépendances essentielles
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
     wget \
     curl \
     git \
@@ -20,6 +21,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Configurer Git avec une identité par défaut
 RUN git config --global user.name "Docker User" \
     && git config --global user.email "docker@example.com"
+
+
+# Configuration de l'historique bash pour persister
+ENV HISTFILE=/root/.bash_history \
+    HISTSIZE=1000 \
+    HISTFILESIZE=2000
+
+# Créer un fichier .bashrc pour forcer la sauvegarde de l'historique
+RUN echo 'shopt -s histappend' >> /root/.bashrc && \
+    echo 'PROMPT_COMMAND="history -a; $PROMPT_COMMAND"' >> /root/.bashrc
 
 
 # Installer Python
